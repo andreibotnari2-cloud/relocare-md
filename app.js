@@ -7,7 +7,6 @@
 
   const hour = new Date().getHours();
 
-  // Seara după ora 20 — 1 mașină; dimineața devreme — 3; restul zilei variabil
   function getCars() {
     if (hour >= 20 || hour < 6) return 1;
     if (hour >= 6 && hour < 9) return 3;
@@ -17,17 +16,36 @@
   let cars = getCars();
   el.textContent = cars === 1 ? '1 mașină' : `${cars} mașini`;
 
-  // Schimbă numărul la fiecare 3–7 minute aleatoriu (simulează rezervări live)
-  function scheduleChange() {
-    const delay = (Math.random() * 4 + 3) * 60 * 1000; // 3–7 min
+  function flashUpdate(next) {
+    // Animație flash vizibilă
+    el.style.transition = 'none';
+    el.style.transform = 'scale(1.3)';
+    el.style.color = '#fff';
+    el.style.background = 'rgba(255,255,255,0.25)';
+    el.style.borderRadius = '4px';
+    el.style.padding = '0 4px';
+
     setTimeout(() => {
-      const current = parseInt(el.textContent);
-      if (current > 1) {
-        const next = current - 1;
-        el.textContent = next === 1 ? '1 mașină' : `${next} mașini`;
-        el.style.animation = 'none';
-        void el.offsetWidth;
-        el.style.animation = '';
+      el.textContent = next === 1 ? '1 mașină' : `${next} mașini`;
+      el.style.transform = 'scale(1.15)';
+      setTimeout(() => {
+        el.style.transition = 'transform 0.4s ease, background 0.4s ease';
+        el.style.transform = 'scale(1)';
+        el.style.background = 'transparent';
+        el.style.padding = '0';
+      }, 150);
+    }, 120);
+  }
+
+  function scheduleChange() {
+    // Prima schimbare după 15s, apoi la fiecare 3–5 min
+    const isFirst = cars === getCars();
+    const delay = isFirst ? 15000 : (Math.random() * 2 + 3) * 60 * 1000;
+
+    setTimeout(() => {
+      if (cars > 1) {
+        cars--;
+        flashUpdate(cars);
         scheduleChange();
       }
     }, delay);
