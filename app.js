@@ -181,13 +181,31 @@ setupForm('pricingForm', 'pricingFormSuccess', 'Prețuri (mijloc)', { name: '#p-
 setupForm('contactForm', 'formSuccess',        'Contact (jos)', { name: '#name',   phone: '#phone',   service: '#service',   details: '#message' });
 
 /* =====================
-   META PIXEL — Contact events
+   META PIXEL + TELEGRAM — Contact click events
    ===================== */
 document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(btn => {
   btn.addEventListener('click', () => {
+    // Meta Pixel
     if (typeof fbq === 'function') {
       fbq('track', 'Contact');
     }
+
+    // Telegram notification
+    const isWa = btn.href.includes('wa.me');
+    const type = isWa ? 'WhatsApp' : 'Telefon';
+    const page = document.title;
+
+    fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: TG_CHAT,
+        parse_mode: 'Markdown',
+        text: `📲 *Click contact — Relocare.MD*\n\n` +
+              `Tip: *${type}*\n` +
+              `Pagina: ${page}`
+      })
+    }).catch(() => {});
   });
 });
 
