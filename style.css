@@ -122,7 +122,7 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
    ===================== */
 .header {
   position: fixed;
-  top: 0; left: 0; right: 0;
+  top: 38px; left: 0; right: 0;
   z-index: 100;
   background: var(--dark);
   transition: var(--transition);
@@ -194,6 +194,9 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
 
 /* Alert banner */
 .alert-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 101;
   background: var(--accent);
   color: white;
   text-align: center;
@@ -1288,7 +1291,7 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
   .nav {
     display: none;
     position: fixed;
-    top: 102px; left: 0; right: 0; /* below header+banner */
+    top: 96px; left: 0; right: 0; /* below banner(38px) + header(58px) */
     background: var(--dark);
     flex-direction: column;
     padding: 12px;
