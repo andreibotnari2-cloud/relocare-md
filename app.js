@@ -197,6 +197,7 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
 
     fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
       method: 'POST',
+      keepalive: true,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: TG_CHAT,
