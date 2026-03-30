@@ -23,8 +23,6 @@
 
 html {
   scroll-behavior: smooth;
-  overflow-x: hidden;
-  max-width: 100%;
 }
 
 body {
@@ -32,8 +30,7 @@ body {
   background: var(--white);
   color: var(--dark);
   line-height: 1.6;
-  overflow-x: hidden;
-  max-width: 100%;
+  overflow-x: clip;
   width: 100%;
 }
 
