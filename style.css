@@ -21,7 +21,11 @@
   --transition: 0.28s cubic-bezier(0.4,0,0.2,1);
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  max-width: 100%;
+}
 
 body {
   font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -29,12 +33,16 @@ body {
   color: var(--dark);
   line-height: 1.6;
   overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
 }
 
 .container {
   max-width: 1160px;
   margin: 0 auto;
   padding: 0 24px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* =====================
@@ -123,6 +131,8 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
 .header {
   position: fixed;
   top: 38px; left: 0; right: 0;
+  width: 100%;
+  box-sizing: border-box;
   z-index: 100;
   background: var(--dark);
   transition: var(--transition);
@@ -196,6 +206,8 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
 .alert-banner {
   position: fixed;
   top: 0; left: 0; right: 0;
+  width: 100%;
+  box-sizing: border-box;
   z-index: 101;
   background: var(--accent);
   color: white;
@@ -223,7 +235,9 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
   align-items: center;
   background: linear-gradient(135deg, #1A1A2E 0%, #1e2640 50%, #1A2535 100%);
   overflow: hidden;
-  padding-top: 102px; /* header + banner */
+  padding-top: 102px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .hero__glow {
@@ -1217,6 +1231,7 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
   display: none;
   position: fixed;
   bottom: 0; left: 0; right: 0;
+  width: 100%;
   z-index: 200;
   background: #0f172a;
   border-top: 1px solid rgba(255,255,255,0.08);
@@ -1224,6 +1239,7 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
   gap: 8px;
   box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+  box-sizing: border-box;
 }
 .mobile-bar__btn {
   flex: 1;
@@ -1398,7 +1414,10 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
   .mobile-bar { display: flex; }
 
   /* Add bottom padding so content isn't behind bar */
-  body { padding-bottom: 80px; }
+  body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+
+  /* Prevent any section from overflowing */
+  section, .container, .hero, .footer { max-width: 100%; overflow-x: hidden; }
 
   /* Buttons full-width on mobile forms */
   .btn--full { font-size: 15px; padding: 15px 20px; }
