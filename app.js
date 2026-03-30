@@ -1,0 +1,205 @@
+/* =====================
+   ALERT BANNER — mașini disponibile dinamic
+   ===================== */
+(function() {
+  const el = document.getElementById('availableCars');
+  if (!el) return;
+
+  const hour = new Date().getHours();
+
+  // Seara după ora 20 — 1 mașină; dimineața devreme — 3; restul zilei variabil
+  function getCars() {
+    if (hour >= 20 || hour < 6) return 1;
+    if (hour >= 6 && hour < 9) return 3;
+    return 2;
+  }
+
+  let cars = getCars();
+  el.textContent = cars === 1 ? '1 mașină' : `${cars} mașini`;
+
+  // Schimbă numărul la fiecare 3–7 minute aleatoriu (simulează rezervări live)
+  function scheduleChange() {
+    const delay = (Math.random() * 4 + 3) * 60 * 1000; // 3–7 min
+    setTimeout(() => {
+      const current = parseInt(el.textContent);
+      if (current > 1) {
+        const next = current - 1;
+        el.textContent = next === 1 ? '1 mașină' : `${next} mașini`;
+        el.style.animation = 'none';
+        void el.offsetWidth;
+        el.style.animation = '';
+        scheduleChange();
+      }
+    }, delay);
+  }
+
+  scheduleChange();
+})();
+
+/* =====================
+   DYNAMIC HERO WORD
+   ===================== */
+(function () {
+  const words = ['depozite', 'oficii', 'locuințe', 'deșeuri'];
+  const el = document.getElementById('dynamicWord');
+  if (!el) return;
+  let idx = 0;
+
+  function next() {
+    idx = (idx + 1) % words.length;
+
+    el.classList.add('slide-out');
+    setTimeout(() => {
+      el.textContent = words[idx];
+      el.classList.remove('slide-out');
+      el.classList.add('slide-in');
+      setTimeout(() => el.classList.remove('slide-in'), 400);
+    }, 320);
+  }
+
+  const interval = 3000 + Math.random() * 1000; // 3–4s
+  setInterval(next, interval);
+})();
+
+/* =====================
+   HEADER SCROLL
+   ===================== */
+const header = document.getElementById('header');
+window.addEventListener('scroll', () => {
+  header.classList.toggle('scrolled', window.scrollY > 20);
+});
+
+/* =====================
+   BURGER MENU
+   ===================== */
+const burger = document.getElementById('burger');
+const nav = document.getElementById('nav');
+burger.addEventListener('click', () => {
+  burger.classList.toggle('open');
+  nav.classList.toggle('open');
+});
+nav.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', () => {
+    burger.classList.remove('open');
+    nav.classList.remove('open');
+  });
+});
+
+/* =====================
+   SCROLL REVEAL
+   ===================== */
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* =====================
+   TELEGRAM
+   ===================== */
+const TG_TOKEN = '8716780190:AAHQ6UgMBB7XQeOOlqMR0n-UA_gJn_EA0rg';
+const TG_CHAT  = '-1003855483080';
+
+async function sendToTelegram(data) {
+  const text =
+    `🚚 *Cerere nouă — Relocare.MD*\n\n` +
+    `👤 *Nume:* ${data.name || '—'}\n` +
+    `📞 *Telefon:* ${data.phone}\n` +
+    `🔧 *Serviciu:* ${data.service}\n` +
+    `📝 *Detalii:* ${data.details || '—'}\n` +
+    `📍 *Sursă:* ${data.source}`;
+
+  await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TG_CHAT,
+      text,
+      parse_mode: 'Markdown'
+    })
+  });
+}
+
+/* =====================
+   FORM HANDLER (reusable)
+   ===================== */
+function setupForm(formId, successId, source, fieldMap) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    const success = document.getElementById(successId);
+    const originalText = btn.textContent;
+
+    btn.textContent = 'Se trimite...';
+    btn.disabled = true;
+
+    const data = {
+      name:    this.querySelector(fieldMap.name)?.value || '',
+      phone:   this.querySelector(fieldMap.phone)?.value || '',
+      service: this.querySelector(fieldMap.service)?.value || '',
+      details: this.querySelector(fieldMap.details)?.value || '',
+      source
+    };
+
+    try {
+      await sendToTelegram(data);
+    } catch (err) {
+      console.error('Telegram error:', err);
+    }
+
+    // Meta Pixel — Lead event
+    if (typeof fbq === 'function') {
+      fbq('track', 'Lead', {
+        content_name: data.service,
+        content_category: source
+      });
+    }
+
+    btn.style.display = 'none';
+    success.classList.add('show');
+    this.reset();
+
+    setTimeout(() => {
+      btn.style.display = '';
+      btn.textContent = originalText;
+      btn.disabled = false;
+      success.classList.remove('show');
+    }, 5000);
+  });
+}
+
+setupForm('heroForm',    'heroFormSuccess',    'Hero (sus)',    { name: '#h-name', phone: '#h-phone', service: '#h-service', details: '#h-details' });
+setupForm('pricingForm', 'pricingFormSuccess', 'Prețuri (mijloc)', { name: '#p-name', phone: '#p-phone', service: '#p-service', details: '#p-details' });
+setupForm('contactForm', 'formSuccess',        'Contact (jos)', { name: '#name',   phone: '#phone',   service: '#service',   details: '#message' });
+
+/* =====================
+   META PIXEL — Contact events
+   ===================== */
+document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (typeof fbq === 'function') {
+      fbq('track', 'Contact');
+    }
+  });
+});
+
+/* =====================
+   SMOOTH ANCHOR OFFSET
+   ===================== */
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    const target = document.querySelector(this.getAttribute('href'));
+    if (!target) return;
+    e.preventDefault();
+    const top = target.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top, behavior: 'smooth' });
+  });
+});
