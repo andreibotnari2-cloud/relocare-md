@@ -1218,29 +1218,33 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
   position: fixed;
   bottom: 0; left: 0; right: 0;
   z-index: 200;
-  background: var(--dark);
-  border-top: 1px solid rgba(255,255,255,0.1);
-  padding: 10px 16px;
-  gap: 8px;
+  background: #0f172a;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 10px 12px;
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  gap: 8px;
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
 }
 .mobile-bar__btn {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 700;
+  gap: 7px;
+  padding: 14px 6px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
   text-decoration: none;
   font-family: 'Exo 2', sans-serif;
-  transition: var(--transition);
+  transition: opacity 0.15s ease;
+  letter-spacing: 0.2px;
 }
-.mobile-bar__btn--call { background: var(--accent); color: white; }
-.mobile-bar__btn--wa { background: #25D366; color: white; }
-.mobile-bar__btn--form { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+.mobile-bar__btn:active { opacity: 0.8; transform: scale(0.97); }
+.mobile-bar__btn svg { flex-shrink: 0; }
+.mobile-bar__btn--call { background: var(--accent); color: white; box-shadow: 0 2px 12px rgba(255,107,53,0.4); }
+.mobile-bar__btn--wa   { background: #25D366; color: white; box-shadow: 0 2px 12px rgba(37,211,102,0.35); }
+.mobile-bar__btn--form { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); border: 1.5px solid rgba(255,255,255,0.15); }
 
 /* =====================
    SCROLL REVEAL
@@ -1394,7 +1398,7 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
   .mobile-bar { display: flex; }
 
   /* Add bottom padding so content isn't behind bar */
-  body { padding-bottom: 70px; }
+  body { padding-bottom: 80px; }
 
   /* Buttons full-width on mobile forms */
   .btn--full { font-size: 15px; padding: 15px 20px; }
