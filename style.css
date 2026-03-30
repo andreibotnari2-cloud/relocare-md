@@ -157,7 +157,7 @@ h1, h2, h3, h4, .logo__text, .btn, .section__tag, .stat strong, .calc__amount {
 }
 .logo__icon { font-size: 22px; }
 .logo__text {
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 900;
   color: white;
   letter-spacing: -0.5px;
