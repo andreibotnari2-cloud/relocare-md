@@ -123,14 +123,35 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 const TG_TOKEN = '8716780190:AAHQ6UgMBB7XQeOOlqMR0n-UA_gJn_EA0rg';
 const TG_CHAT  = '-1003855483080';
 
+// Captează UTM-urile din URL
+function getUTM() {
+  const p = new URLSearchParams(window.location.search);
+  const parts = [];
+  if (p.get('utm_source'))   parts.push(`src: ${p.get('utm_source')}`);
+  if (p.get('utm_medium'))   parts.push(`med: ${p.get('utm_medium')}`);
+  if (p.get('utm_campaign')) parts.push(`camp: ${p.get('utm_campaign')}`);
+  if (p.get('utm_content'))  parts.push(`cont: ${p.get('utm_content')}`);
+  if (p.get('utm_term'))     parts.push(`term: ${p.get('utm_term')}`);
+  return parts.length ? parts.join(' | ') : null;
+}
+
+function getFullURL() {
+  return window.location.href;
+}
+
 async function sendToTelegram(data) {
+  const utm = getUTM();
+  const url = getFullURL();
+
   const text =
     `🚚 *Cerere nouă — Relocare.MD*\n\n` +
     `👤 *Nume:* ${data.name || '—'}\n` +
     `📞 *Telefon:* ${data.phone}\n` +
     `🔧 *Serviciu:* ${data.service}\n` +
     `📝 *Detalii:* ${data.details || '—'}\n` +
-    `📍 *Sursă:* ${data.source}`;
+    `📍 *Sursă form:* ${data.source}\n` +
+    (utm ? `📊 *UTM:* ${utm}\n` : '') +
+    `🔗 *URL:* ${url}`;
 
   await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
     method: 'POST',
@@ -213,6 +234,9 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
     const type = isWa ? 'WhatsApp' : 'Telefon';
     const page = document.title;
 
+    const utm = getUTM();
+    const url = getFullURL();
+
     fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
       method: 'POST',
       keepalive: true,
@@ -220,9 +244,10 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
       body: JSON.stringify({
         chat_id: TG_CHAT,
         parse_mode: 'Markdown',
-        text: `📲 *Click contact — Relocare.MD*\n\n` +
+        text: `📲 *Intenție apel — Relocare.MD*\n\n` +
               `Tip: *${type}*\n` +
-              `Pagina: ${page}`
+              (utm ? `📊 *UTM:* ${utm}\n` : '') +
+              `🔗 *URL:* ${url}`
       })
     }).catch(() => {});
   });
