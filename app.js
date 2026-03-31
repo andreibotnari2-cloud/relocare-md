@@ -55,6 +55,44 @@
 })();
 
 /* =====================
+   GA4 — helper
+   ===================== */
+function ga4(eventName, params) {
+  if (typeof gtag === 'function') {
+    gtag('event', eventName, params || {});
+  }
+}
+
+/* =====================
+   GA4 — Scroll depth 25% / 50% / 75% / 90%
+   ===================== */
+(function() {
+  const milestones = { 25: false, 50: false, 75: false, 90: false };
+  window.addEventListener('scroll', function() {
+    const scrolled = window.scrollY + window.innerHeight;
+    const total = document.documentElement.scrollHeight;
+    const pct = Math.round((scrolled / total) * 100);
+    for (const depth of [25, 50, 75, 90]) {
+      if (!milestones[depth] && pct >= depth) {
+        milestones[depth] = true;
+        ga4('scroll_depth', { depth_percent: depth, percent_scrolled: depth });
+      }
+    }
+  }, { passive: true });
+})();
+
+/* =====================
+   GA4 — Time on page 30s / 60s
+   ===================== */
+(function() {
+  [30, 60].forEach(sec => {
+    setTimeout(() => {
+      ga4('time_on_page', { seconds: sec });
+    }, sec * 1000);
+  });
+})();
+
+/* =====================
    DYNAMIC HERO WORD
    ===================== */
 (function () {
@@ -194,13 +232,26 @@ function setupForm(formId, successId, source, fieldMap) {
       console.error('Telegram error:', err);
     }
 
-    // Meta Pixel — Lead event
+    // Meta Pixel — Lead
     if (typeof fbq === 'function') {
       fbq('track', 'Lead', {
         content_name: data.service,
         content_category: source
       });
     }
+
+    // GA4 — Formular_expediat
+    ga4('Formular_expediat', {
+      form_location: source,
+      serviciu: data.service,
+      method: 'web_form'
+    });
+
+    // GA4 — generate_lead (event standard GA4)
+    ga4('generate_lead', {
+      currency: 'MDL',
+      value: 350
+    });
 
     btn.style.display = 'none';
     success.classList.add('show');
@@ -231,6 +282,12 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
 
     // Telegram notification
     const isWa = btn.href.includes('wa.me');
+
+    // GA4
+    ga4('Intentie_apel', {
+      contact_type: isWa ? 'whatsapp' : 'telefon'
+    });
+    ga4('contact', { method: isWa ? 'whatsapp' : 'phone' });
     const type = isWa ? 'WhatsApp' : 'Telefon';
     const page = document.title;
 
@@ -252,6 +309,34 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
     }).catch(() => {});
   });
 });
+
+/* =====================
+   GA4 — Sectiuni vizitate (IntersectionObserver)
+   ===================== */
+(function() {
+  const sections = [
+    { id: 'servicii', name: 'Servicii' },
+    { id: 'oferta',   name: 'Preturi' },
+    { id: 'despre',   name: 'Despre_noi' },
+    { id: 'contact',  name: 'Contact' },
+  ];
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const section = sections.find(s => s.id === entry.target.id);
+        if (section) {
+          ga4('sectiune_vizitata', { sectiune: section.name });
+          obs.unobserve(entry.target);
+        }
+      }
+    });
+  }, { threshold: 0.3 });
+
+  sections.forEach(s => {
+    const el = document.getElementById(s.id);
+    if (el) obs.observe(el);
+  });
+})();
 
 /* =====================
    SMOOTH ANCHOR OFFSET
