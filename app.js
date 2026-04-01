@@ -161,6 +161,55 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 const TG_TOKEN = '8716780190:AAHQ6UgMBB7XQeOOlqMR0n-UA_gJn_EA0rg';
 const TG_CHAT  = '-1003855483080';
 
+// ─── FRAUD DETECTION ───────────────────────────────────────────
+async function checkFraudIP() {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const { ip } = await res.json();
+
+    const WINDOW_MS = 5 * 60 * 1000; // 5 minute
+    const THRESHOLD = 2;
+    const storageKey = `visits_${ip}`;
+
+    const now = Date.now();
+    const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+    // Păstrează doar vizitele din ultimele 5 minute
+    const recent = stored.filter(t => now - t < WINDOW_MS);
+    recent.push(now);
+    localStorage.setItem(storageKey, JSON.stringify(recent));
+
+    if (recent.length >= THRESHOLD) {
+      await sendFraudAlert(ip, recent.length);
+    }
+  } catch (e) {
+    console.warn('Fraud check failed:', e);
+  }
+}
+
+async function sendFraudAlert(ip, visitCount) {
+  const text =
+    `⚠️ *ALERTĂ FRAUDĂ — Relocare.MD*\n\n` +
+    `🌐 *IP:* \`${ip}\`\n` +
+    `🔁 *Vizite în ultimele 5 min:* ${visitCount}\n` +
+    `🕐 *Timp:* ${new Date().toLocaleString('ro-MD')}\n` +
+    `🔗 *URL:* ${window.location.href}\n\n` +
+    `⚡ Posibil comportament suspect sau spam!`;
+
+  await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TG_CHAT,
+      text,
+      parse_mode: 'Markdown'
+    })
+  });
+}
+
+checkFraudIP();
+// ────────────────────────────────────────────────────────────────
+
 // Captează UTM-urile din URL
 function getUTM() {
   const p = new URLSearchParams(window.location.search);
