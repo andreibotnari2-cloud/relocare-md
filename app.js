@@ -355,6 +355,51 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
 })();
 
 /* =====================
+   FRAUD DETECTION — vizite repetate
+   Dacă același browser intră de 2+ ori în 5 min → alertă Telegram
+   ===================== */
+(function() {
+  const KEY        = 'rlc_visits';
+  const WINDOW_MS  = 5 * 60 * 1000; // 5 minute
+  const THRESHOLD  = 2;             // număr de vizite care declanșează alerta
+
+  const now   = Date.now();
+  const raw   = localStorage.getItem(KEY);
+  let visits  = raw ? JSON.parse(raw) : [];
+
+  // Păstrăm doar vizitele din ultimele 5 minute
+  visits = visits.filter(ts => now - ts < WINDOW_MS);
+  visits.push(now);
+  localStorage.setItem(KEY, JSON.stringify(visits));
+
+  if (visits.length >= THRESHOLD) {
+    const firstVisit  = new Date(visits[0]).toLocaleTimeString('ro-RO');
+    const lastVisit   = new Date(visits[visits.length - 1]).toLocaleTimeString('ro-RO');
+    const spanSec     = Math.round((visits[visits.length - 1] - visits[0]) / 1000);
+    const utm         = getUTM();
+    const url         = getFullURL();
+
+    const text =
+      `⚠️ *ALERTĂ FRAUDĂ — Relocare.MD*\n\n` +
+      `🔁 *Vizite în ultimele 5 min:* ${visits.length}\n` +
+      `🕐 *Prima vizită:* ${firstVisit}\n` +
+      `🕐 *Ultima vizită:* ${lastVisit}\n` +
+      `⏱ *Interval total:* ${spanSec}s\n` +
+      `📱 *User-Agent:* ${navigator.userAgent.substring(0, 80)}\n` +
+      `🖥 *Ecran:* ${screen.width}×${screen.height}\n` +
+      (utm ? `📊 *UTM:* ${utm}\n` : '') +
+      `🔗 *URL:* ${url}`;
+
+    fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TG_CHAT, text, parse_mode: 'Markdown' })
+    }).catch(() => {});
+  }
+})();
+
+/* =====================
    SMOOTH ANCHOR OFFSET
    ===================== */
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
