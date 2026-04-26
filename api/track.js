@@ -1,7 +1,6 @@
-const TG_TOKEN = '8716780190:AAHQ6UgMBB7XQeOOlqMR0n-UA_gJn_EA0rg';
-const TG_CHAT  = '-1003855483080';
+const TG_TOKEN_ALERTE = '8472569973:AAFGOWDCHO7vK2TZXPF8ThNTFuliAwAQqgc';
+const TG_CHAT_ALERTE  = '-1003897655781';
 
-// Persista in-memory cat timp functia e "warm" (cateva minute)
 const ipVisits = new Map();
 
 export default async function handler(req, res) {
@@ -12,12 +11,11 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
 
-  // IP real din headerele Vercel
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown')
     .split(',')[0].trim();
   const pageUrl = req.body?.url || '';
 
-  const WINDOW_MS = 5 * 60 * 1000; // 5 minute
+  const WINDOW_MS = 5 * 60 * 1000;
   const THRESHOLD = 2;
   const now = Date.now();
 
@@ -36,10 +34,10 @@ export default async function handler(req, res) {
       `⚡ Posibil comportament suspect sau spam!`;
 
     try {
-      await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+      await fetch(`https://api.telegram.org/bot${TG_TOKEN_ALERTE}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: TG_CHAT, text, parse_mode: 'Markdown' })
+        body: JSON.stringify({ chat_id: TG_CHAT_ALERTE, text, parse_mode: 'Markdown' })
       });
     } catch (_) {}
   }

@@ -158,8 +158,13 @@ document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 /* =====================
    TELEGRAM
    ===================== */
+// Lead-uri (formulare + intenții apel) → grup vechi
 const TG_TOKEN = '8716780190:AAHQ6UgMBB7XQeOOlqMR0n-UA_gJn_EA0rg';
 const TG_CHAT  = '-1003855483080';
+
+// Alerte fraudă → grup nou
+const TG_TOKEN_ALERTE = '8472569973:AAFGOWDCHO7vK2TZXPF8ThNTFuliAwAQqgc';
+const TG_CHAT_ALERTE  = '-1003897655781';
 
 // ─── FRAUD DETECTION (server-side) ────────────────────────────
 async function checkFraudIP() {
@@ -169,13 +174,11 @@ async function checkFraudIP() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: window.location.href })
     });
-  } catch (e) {
-    console.warn('Fraud check failed:', e);
-  }
+  } catch (e) {}
 }
-
 checkFraudIP();
 // ────────────────────────────────────────────────────────────────
+
 
 // Captează UTM-urile din URL
 function getUTM() {
@@ -354,30 +357,29 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
   });
 })();
 
+
 /* =====================
-   FRAUD DETECTION — vizite repetate
-   Dacă același browser intră de 2+ ori în 5 min → alertă Telegram
+   FRAUD DETECTION — vizite repetate → grup nou
    ===================== */
 (function() {
-  const KEY        = 'rlc_visits';
-  const WINDOW_MS  = 5 * 60 * 1000; // 5 minute
-  const THRESHOLD  = 2;             // număr de vizite care declanșează alerta
+  const KEY       = 'rlc_visits';
+  const WINDOW_MS = 5 * 60 * 1000;
+  const THRESHOLD = 2;
 
-  const now   = Date.now();
-  const raw   = localStorage.getItem(KEY);
-  let visits  = raw ? JSON.parse(raw) : [];
+  const now    = Date.now();
+  const raw    = localStorage.getItem(KEY);
+  let visits   = raw ? JSON.parse(raw) : [];
 
-  // Păstrăm doar vizitele din ultimele 5 minute
   visits = visits.filter(ts => now - ts < WINDOW_MS);
   visits.push(now);
   localStorage.setItem(KEY, JSON.stringify(visits));
 
   if (visits.length >= THRESHOLD) {
-    const firstVisit  = new Date(visits[0]).toLocaleTimeString('ro-RO');
-    const lastVisit   = new Date(visits[visits.length - 1]).toLocaleTimeString('ro-RO');
-    const spanSec     = Math.round((visits[visits.length - 1] - visits[0]) / 1000);
-    const utm         = getUTM();
-    const url         = getFullURL();
+    const firstVisit = new Date(visits[0]).toLocaleTimeString('ro-RO');
+    const lastVisit  = new Date(visits[visits.length - 1]).toLocaleTimeString('ro-RO');
+    const spanSec    = Math.round((visits[visits.length - 1] - visits[0]) / 1000);
+    const utm        = getUTM();
+    const url        = getFullURL();
 
     const text =
       `⚠️ *ALERTĂ FRAUDĂ — Relocare.MD*\n\n` +
@@ -390,11 +392,11 @@ document.querySelectorAll('a[href^="tel:"], a[href^="https://wa.me"]').forEach(b
       (utm ? `📊 *UTM:* ${utm}\n` : '') +
       `🔗 *URL:* ${url}`;
 
-    fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    fetch(`https://api.telegram.org/bot${TG_TOKEN_ALERTE}/sendMessage`, {
       method: 'POST',
       keepalive: true,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TG_CHAT, text, parse_mode: 'Markdown' })
+      body: JSON.stringify({ chat_id: TG_CHAT_ALERTE, text, parse_mode: 'Markdown' })
     }).catch(() => {});
   }
 })();
